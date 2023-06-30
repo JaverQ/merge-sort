@@ -35,6 +35,7 @@ def slice_file(input_file, output_file):
     if out_file:
         out_file.close()
         sort_file(out_file_name)
+    input_file_opened.close()
     sort_directory(folder_name, output_file)
 
 
