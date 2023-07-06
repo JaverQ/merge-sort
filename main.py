@@ -1,6 +1,9 @@
 import os, shutil, sys
 
 
+DIVISOR = 100000
+
+
 class File:
     def __init__(self, file):
         self.file = file
@@ -18,38 +21,36 @@ def slice_file(input_file, output_file):
     folder_name = 'files'
     if not os.path.isdir("files"):
         os.mkdir("files")
-    input_file_opened = open(input_file, "r")
     out_file = None
     out_file_name = None
-    for line in input_file_opened:
-        if line_number % 100000 == 0:
-            if out_file:
-                out_file.close()
-                sort_file(out_file_name)
-                print(f'Sorted file is created: {out_file_name}')
-            out_file_name = f"{folder_name}/{line_number // 100000}"
-            out_file = open(out_file_name, "w")
-        out_file.write(line)
-        line_number += 1
-    input_file_opened.close()
+    with open(input_file, "r") as input_file_opened:
+        for line in input_file_opened:
+            if line_number % DIVISOR == 0:
+                if out_file:
+                    out_file.close()
+                    sort_file(out_file_name)
+                    print(f'Sorted file is created: {out_file_name}')
+                out_file_name = f"{folder_name}/{line_number // DIVISOR}"
+                out_file = open(out_file_name, "w")
+            out_file.write(line)
+            line_number += 1
     if out_file:
         out_file.close()
         sort_file(out_file_name)
     input_file_opened.close()
     sort_directory(folder_name, output_file)
+    shutil.rmtree('files')
 
 
 def sort_file(input_file):
     list = []
-    input_file_opened = open(input_file, "r")
-    for line in input_file_opened:
-        list.append(int(line))
-    input_file_opened.close()
+    with open(input_file, "r") as input_file_opened:
+        for line in input_file_opened:
+            list.append(int(line))
     sorted_list = merge_sort(list)
-    out_file_opened = open(f"{input_file}.sorted", "w")
-    for line in sorted_list:
-        out_file_opened.write(f"{line}\r")
-    out_file_opened.close()
+    with open(f"{input_file}.sorted", "w") as out_file_opened:
+        for line in sorted_list:
+            out_file_opened.write(f"{line}\r")
 
 
 def sort_directory(folder, output_file):
@@ -78,8 +79,8 @@ def merge_sort_files(list_of_list, final_file):
             if item == sorted_first_lines_list[0]:
                 final_file.write(f'{str(item)}\r')
                 count += 1
-                if count % 100000 == 0:
-                    print('100000 entries written...')
+                if count % DIVISOR == 0:
+                    print(f'{DIVISOR} entries written...')
                 value = list_of_list[index].pop()
                 if value:
                     first_lines_list[index] = value
@@ -121,4 +122,3 @@ def merge(l_list, r_list):
 
 
 slice_file(sys.argv[1], sys.argv[2])
-shutil.rmtree('files')
